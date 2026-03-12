@@ -1,2 +1,2 @@
 # claude-workspace
-This repository contains claude skills, agents, plugins that are leveraged across Sage Bionetworks
+This repository contains agent skills that are leveraged across Sage Bionetworks
