@@ -1,0 +1,10 @@
+{
+  "name": "agent-skills",
+  "description": "A collection of agent skills for Sage Bionetworks — data science, bioinformatics, and research tooling.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sage Bionetworks",
+    "url": "https://sagebionetworks.org"
+  },
+  "license": "Apache-2.0"
+}
