@@ -19,7 +19,7 @@ These rules govern every line written or kept. Apply them to both new content an
 4. **Every constraint needs a reason.** "Never do X — because Y." Without a reason, Claude follows the rule in obvious cases and misses edge cases.
 5. **No secrets.** Env var names are fine; values, tokens, and connection strings are not.
 6. **Be specific or say nothing.** Name exact paths, tools, patterns. Vague guidance produces vague results.
-7. **Under 150 lines per file.** Every line must change how Claude behaves. Cut anything inferable from the codebase, anything restating the README, any empty section headers.
+7. **Keep files concise but complete.** Every line must change how Claude behaves. Cut anything inferable from the codebase, anything restating the README, any empty section headers. But do NOT sacrifice coverage for brevity — a thorough 200-line file is better than a thin 50-line file that misses critical patterns.
 8. **Imperative voice.** "Use named exports" not "We tend to prefer named exports."
 9. **Focus on non-obvious.** Surface what Claude cannot infer from code alone.
 10. **Quality test for every line:** "If I remove this, will Claude mess up?" No -> delete it. Yes -> keep it.
@@ -153,19 +153,35 @@ Before presenting changes to the user:
 1. **New content must pass the quality test**: "If I remove this, will Claude mess up?"
 2. **New constraints must have reasons.** Do not propose a constraint without a "— because Y" explanation.
 3. **Remove anything now enforced by new tooling configs.** If `.eslintrc` was added and it enforces a convention currently in CLAUDE.md, flag that line for removal.
-4. **Check line count.** If updates would push a file past 150 lines, identify the lowest-value existing lines to cut. Present these cuts alongside the additions.
+4. **Keep files concise but complete.** Every line must earn its place, but do not cut behavioral conventions, reusable utility lists, or hack documentation just to stay short. Thoroughness over brevity.
 5. **Data model items**: only include shape constraints Claude would get wrong without guidance.
 
 ---
 
-## Step 5: Check for Coverage Gaps
+## Step 5: Check for Coverage Gaps (with Deep-Dive)
 
 **Every directory is a candidate for CLAUDE.md coverage.** Scan all directories in the repo and verify that each one's non-obvious patterns are documented *somewhere* — either in its own CLAUDE.md, a parent's, or an ancestor's.
 
-For directories without coverage:
+### Deep-dive for convention density
 
-1. **Needs own file**: Has conventions, constraints, or patterns that differ from its parent. Indicators: own build file, specialized tech (IaC, codegen, CRDT, DDL, security, custom protocols), distinct coding patterns, high dependency fan-in, gotcha patterns from bug-fix PRs, 5+ source files with unique conventions.
-2. **Roll up to parent**: Simple enough (few files, no distinct patterns, follows sibling conventions) that a mention in the parent CLAUDE.md suffices.
+For each directory that currently lacks its own CLAUDE.md, launch Explore agents to **read source files deeply** (not just list them). Look for:
+- **Return type conventions** — inconsistencies, reversed parameter orders, non-obvious tuple structures
+- **Conditional/hidden behavior** — template method steps that are skipped under certain conditions
+- **Reusable utility functions** — that Claude would reinvent if not told they exist
+- **Hack comments** — grep for `HACK`, `FIXME`, `WORKAROUND`, `XXX`
+- **Strict enforcement** — kwargs assertions, ordering dependencies, required parameters
+- **Naming inconsistencies** — mixed conventions that Claude might "fix" incorrectly
+- **Hardcoded values** — IDs, URLs, magic numbers duplicated across files
+- **Test patterns** — custom mock helpers, fixture composition, parametrization conventions
+- **External tool invocations** — subprocess calls with hack flags (e.g., `; exit 0`)
+- **Concurrency/locking patterns** — mutex flags, processing locks, retry logic
+
+A directory with many of these patterns has **high convention density** and needs its own CLAUDE.md, even if it has few files or no separate build config.
+
+### Coverage decisions
+
+1. **Needs own file**: Has conventions, constraints, or patterns that differ from its parent. Indicators: own build file, specialized tech, distinct coding patterns, high dependency fan-in, gotcha patterns from bug-fix PRs, **high convention density** (many behavioral patterns even with few files).
+2. **Roll up to parent**: Simple enough (few files, no distinct patterns, follows sibling conventions, **low convention density**) that a mention in the parent CLAUDE.md suffices.
 3. **Already covered by ancestor**: Patterns are already documented in an existing ancestor's CLAUDE.md.
 
 Build a coverage map showing where every directory's patterns are (or should be) documented. Present gaps in the change analysis (Step 7) so no directory falls through the cracks.
@@ -223,7 +239,7 @@ For each CLAUDE.md, present a structured report:
 #### Already covered:
 - lib/lib-common/ → covered by ./CLAUDE.md architecture section
 
-### Line count: currently 120, after changes ~125 (under 150 check)
+### Line count: currently 120, after changes ~145 (concise but complete)
 ```
 
 Ask the user to approve, modify, or skip each change set.
@@ -236,9 +252,9 @@ For each approved change:
 
 1. **Updates to existing files**: Use the Edit tool. Preserve the overall document structure and voice. Update the `<!-- Last reviewed: YYYY-MM -->` date to the current month.
 2. **New module CLAUDE.md files**: Use the Write tool. Follow the bootstrap generation approach:
-   - Read 3-5 representative source files from the module
+   - Read source files deeply from the module (not just 3-5 samples — read all key files for behavioral conventions)
    - Apply all generation rules
-   - Keep under 150 lines (module files are typically much shorter)
+   - Include: reusable utilities, non-obvious return types, conditional behavior, mock/test patterns, hack workarounds, naming inconsistencies
 3. **Removals**: Delete the flagged lines. Do not leave empty section headers.
 
 ---
@@ -267,5 +283,5 @@ Do NOT commit without explicit user approval.
 - **No GitHub remote**: Proceed with local git history only.
 - **Cross-repo changes detected but can't verify**: Note the potential impact. Let the user decide whether to investigate further.
 - **Completed Jira epic lifts a constraint**: Flag the constraint for removal or update. Include the epic key and completion date as evidence.
-- **File would exceed 150 lines after updates**: Present the additions alongside the lowest-value existing lines, and recommend which to cut. Let the user decide.
+- **File growing very large (200+ lines)**: Consider whether a child directory deserves its own CLAUDE.md to offload content. Present the split option to the user.
 - **Repo has no existing CLAUDE.md files**: Warn the user and suggest using `/bootstrap-claudemd` instead.

@@ -21,7 +21,7 @@ These rules govern every line written. Violating them produces files that are to
 4. **Every constraint needs a reason.** "Never do X — because Y." Without a reason, Claude follows the rule in obvious cases and misses edge cases.
 5. **No secrets.** Env var names are fine; values, tokens, and connection strings are not.
 6. **Be specific or say nothing.** Name exact paths, tools, patterns. Vague guidance produces vague results.
-7. **Under 150 lines per file.** Every line must change how Claude behaves. Cut anything inferable from the codebase, anything restating the README, any empty section headers.
+7. **Keep files concise but complete.** Every line must change how Claude behaves. Cut anything inferable from the codebase, anything restating the README, any empty section headers. But do NOT sacrifice coverage for brevity — a thorough 200-line file is better than a thin 50-line file that misses critical patterns.
 8. **Imperative voice.** "Use named exports" not "We tend to prefer named exports."
 9. **Focus on non-obvious.** Surface what Claude cannot infer from code alone: unusual tooling, generated files that must not be edited, non-standard layouts, monorepo conventions, gotchas.
 10. **Quality test for every line:** "If I remove this, will Claude mess up?" No -> delete it. Yes -> keep it.
@@ -53,8 +53,8 @@ Same format but scoped to the module. Even shorter — often just Project + Conv
 
 **Every directory is a candidate.** The question is not "is this complex enough?" but "does this directory (or its children) have anything non-obvious that Claude needs to know?" Use these rules to decide placement:
 
-- **Create a CLAUDE.md in a directory** when it has its own conventions, constraints, data flow patterns, or gotchas that differ from or extend the parent CLAUDE.md.
-- **Roll up into the parent** when a subdirectory is simple enough that a brief mention in the parent's CLAUDE.md fully covers it. Indicators for rollup: fewer than 3 source files, no distinct conventions, follows the same patterns as siblings.
+- **Create a CLAUDE.md in a directory** when it has its own conventions, constraints, data flow patterns, or gotchas that differ from or extend the parent CLAUDE.md. Indicators: own build file, specialized tech, distinct coding patterns, high dependency fan-in, **high convention density** (many behavioral patterns even with few files — e.g., non-obvious return types, reusable utilities, conditional template methods, mock patterns, hack workarounds).
+- **Roll up into the parent** when a subdirectory is simple enough that a brief mention in the parent's CLAUDE.md fully covers it. Indicators for rollup: fewer than 3 source files, no distinct conventions, follows the same patterns as siblings, **low convention density** (no behavioral surprises found during Step 2b deep-dive).
 - **Cover children from the parent** when multiple subdirectories share the same patterns — document once in the parent rather than repeating in each child.
 
 The goal is full coverage: every directory's non-obvious patterns should be documented *somewhere* — either in its own CLAUDE.md or in an ancestor's. No directory should fall through the cracks.
@@ -107,6 +107,26 @@ Extract:
 - Read test files for non-standard test patterns (custom runners, unusual directory layouts, integration test infrastructure)
 - Check README.md for constraints or setup gotchas
 - Look at recent git log (20 commits) for commit message conventions and active areas
+
+---
+
+## Step 2b: Deep-Dive Exploration (parallel agents)
+
+**This step is critical.** Step 2 gives a structural overview. Step 2b reads source files deeply to find behavioral conventions — the non-obvious patterns that cause the most mistakes. Skip this step only for trivially small repos (<10 source files total).
+
+Launch up to 3 Explore agents in parallel, one per major source directory. For each, instruct the agent to **read entire files** (not sample), focusing on:
+
+### What to look for in EVERY major module:
+1. **Return type conventions** — Do functions return tuples, dataclasses, booleans, strings? Are there inconsistencies (e.g., one function returns `(error, warning)` while all others return `(warning, error)`)? Document ALL non-obvious return types.
+2. **Conditional/hidden behavior** — Template method patterns where some steps are skipped under certain conditions. Methods that behave differently based on a type field or mode flag. Document when things DON'T run, not just when they do.
+3. **Reusable utility functions** — Functions that exist for common operations (validation, data loading, formatting). List them explicitly so Claude uses them instead of writing new ones. Include the module path, function name, parameters, and what it returns.
+4. **Hack comments and workarounds** — Grep for `HACK`, `FIXME`, `WORKAROUND`, `XXX`. These are documented gotchas from the original authors. Each one likely needs a CLAUDE.md entry.
+5. **Strict enforcement patterns** — kwargs validated via assertions, required parameters, ordering dependencies between steps. Where will Claude crash if it gets the order wrong?
+6. **Naming inconsistencies** — Mixed case conventions (camelCase args but snake_case params), inconsistent class naming (some lowercase, some PascalCase). Document these so Claude matches existing patterns rather than "fixing" them.
+7. **Hardcoded values** — IDs, URLs, magic numbers that appear in multiple files. If they must stay in sync, document where they all live.
+8. **Test patterns** — Mock helpers (especially custom ones not in conftest), fixture composition, how test data is created, parametrization conventions, naming conventions.
+9. **External tool invocations** — Subprocess calls, CLI wrappers, inter-language bridges (Python calling R, Java calling shell). Document the invocation pattern and any hacks (like `; exit 0` to suppress errors).
+10. **Concurrency/locking patterns** — Mutex locks, processing flags, retry logic, timeout handling.
 
 ---
 
@@ -204,8 +224,8 @@ For each approved CLAUDE.md:
 2. Write each applicable section following the output format.
 3. Omit sections that don't apply — no empty headings.
 4. Use imperative voice throughout.
-5. Target under 150 lines. If over, identify and cut the lowest-value lines.
-6. For module-level files, keep them even shorter. Only include what differs from the root CLAUDE.md.
+5. Keep files concise but complete. Every line must earn its place, but do NOT cut behavioral conventions or reusable utility lists just to hit an arbitrary line count. Thoroughness over brevity.
+6. For module-level files, only include what differs from the root CLAUDE.md. Include: reusable utilities that must not be reinvented, non-obvious return types, conditional behavior, mock/test patterns, hack workarounds, naming inconsistencies.
 
 ---
 
