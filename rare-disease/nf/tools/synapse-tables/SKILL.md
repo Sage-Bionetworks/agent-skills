@@ -251,6 +251,51 @@ syn.store(Table(table, df))
 - After upserting to `syn51730943`, trigger `update-observation-schema` to keep the observation form's enum values in sync
 - Use `dry_run` mode (available in `upsert-tools.yml` via `workflow_dispatch`) to preview changes before committing
 
+### Snapshot Tables Before and After Changes
+
+Synapse tables support versioned snapshots. Always create a snapshot immediately before and after any bulk modification so changes are auditable and reversible.
+
+```python
+import synapseclient
+
+syn = synapseclient.login()
+
+# --- BEFORE making changes ---
+before = syn.create_snapshot_version(
+    "syn51730943",
+    comment="Pre-update snapshot before adding Q1 2026 tool submissions"
+)
+print(f"Before snapshot version: {before}")
+
+# ... make your changes (upsert, delete, etc.) ...
+
+# --- AFTER making changes ---
+after = syn.create_snapshot_version(
+    "syn51730943",
+    comment="Post-update snapshot after adding Q1 2026 tool submissions"
+)
+print(f"After snapshot version: {after}")
+```
+
+**Querying a specific snapshot version:**
+```python
+# Query a historical snapshot rather than the current table
+results = syn.tableQuery(
+    "SELECT * FROM syn51730943",
+    snapshotVersion=before
+)
+df = results.asDataFrame()
+```
+
+**Listing all snapshots for a table:**
+```python
+snapshots = syn.get_snapshot_versions("syn51730943")
+for s in snapshots:
+    print(f"Version {s['snapshotVersion']}: {s.get('snapshotComment', '')} ({s['createdOn']})")
+```
+
+Apply this pattern to any table you modify: `syn51730943`, `syn26486808`, `syn26486811`, `syn26486823`, `syn26486832`, `syn26486839`.
+
 ## Reference
 - NF Tools Portal: https://www.synapse.org/Synapse:syn26338068/tables/
 - Schema source: https://github.com/nf-osi/nf-research-tools-schema
