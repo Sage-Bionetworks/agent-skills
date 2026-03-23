@@ -45,8 +45,9 @@ Section order (omit any section that doesn't apply — no empty headings):
 5. `## Conventions` — non-obvious patterns not enforced by tooling
 6. `## Architecture` — key module boundaries or data flow, only if non-obvious from directory structure
 7. `## Constraints` — hard rules Claude must never violate, each with a reason
-8. `## Testing` — only if the approach is non-standard
-9. `## Related Systems` — sibling repos/services this interacts with, only if the relationship is non-obvious
+8. `## Anti-Patterns — Do NOT` — things Claude must AVOID doing, each with evidence and a reason. Sourced from: reverted PRs, reviewer pushback, HACK/FIXME comments protecting intentional patterns, production incidents. Format: "Do NOT X — because Y (evidence: PR #N / revert hash / Jira ticket)."
+9. `## Testing` — only if the approach is non-standard
+10. `## Related Systems` — sibling repos/services this interacts with, only if the relationship is non-obvious
 
 ### Module-Level Files
 Same format but scoped to the module. Even shorter — often just Project + Conventions + Constraints.
@@ -55,7 +56,7 @@ Same format but scoped to the module. Even shorter — often just Project + Conv
 
 - **Create a CLAUDE.md in a directory** when it has its own conventions, constraints, data flow patterns, or gotchas that differ from or extend the parent CLAUDE.md. Indicators: own build file, specialized tech, distinct coding patterns, high dependency fan-in, **high convention density** (many behavioral patterns even with few files — e.g., non-obvious return types, reusable utilities, conditional template methods, mock patterns, hack workarounds).
 - **Roll up into the parent** when a subdirectory is simple enough that a brief mention in the parent's CLAUDE.md fully covers it. Indicators for rollup: fewer than 3 source files, no distinct conventions, follows the same patterns as siblings, **low convention density** (no behavioral surprises found during Step 2b deep-dive).
-- **Cover children from the parent** when multiple subdirectories share the same patterns — document once in the parent rather than repeating in each child.
+- **Cover children from the parent** when multiple subdirectories share the same patterns — document once in the parent rather than repeating in each child. Use a clearly labeled `### Rolled-up subdirectories` section in the parent to name each covered child and briefly describe what it contains — so readers know the child was intentionally covered here, not forgotten.
 
 The goal is full coverage: every directory's non-obvious patterns should be documented *somewhere* — either in its own CLAUDE.md or in an ancestor's. No directory should fall through the cracks.
 
@@ -91,6 +92,7 @@ Extract:
 
 ### Agent 2 — Structure, module candidates & data models
 - Map the full directory tree (all levels, not just top-level)
+- **Include non-code directories.** Documentation directories (e.g., `docs/`) with their own build systems, conventions, or content frameworks are candidates — not just source code directories. Any directory with non-obvious patterns needs coverage.
 - **Treat every directory as a CLAUDE.md candidate.** For each directory, determine:
   1. **Own file**: Does it have conventions, constraints, or patterns that differ from its parent? Indicators: own build file, specialized tech (IaC, codegen, CRDT, DDL, security, custom protocols), distinct coding patterns, high dependency fan-in, history of gotcha patterns, 5+ source files with unique conventions.
   2. **Roll up to parent**: Is it simple enough (few files, no distinct patterns, follows sibling conventions) that a mention in the parent CLAUDE.md suffices?
@@ -127,16 +129,20 @@ Launch up to 3 Explore agents in parallel, one per major source directory. For e
 8. **Test patterns** — Mock helpers (especially custom ones not in conftest), fixture composition, how test data is created, parametrization conventions, naming conventions.
 9. **External tool invocations** — Subprocess calls, CLI wrappers, inter-language bridges (Python calling R, Java calling shell). Document the invocation pattern and any hacks (like `; exit 0` to suppress errors).
 10. **Concurrency/locking patterns** — Mutex locks, processing flags, retry logic, timeout handling.
+11. **Anti-patterns from git history** — Search for reverted commits (`git log --oneline --all --grep="Revert"`). Each revert is a lesson learned — document what was tried and why it failed as a "Do NOT" rule. Also search for defensive comments: `grep -rn "DO NOT\|NEVER\|WARNING\|CAREFUL\|don't remove\|do not change" --include="*.py" --include="*.ts" --include="*.java" --include="*.go"`.
 
 ---
 
 ## Step 3: Gather Ecosystem Context (parallel with Step 2)
 
+**IMPORTANT: Always use MCP server tools for all GitHub, Jira, and Confluence operations. Never use the `gh` CLI — it may not be available. Use `mcp__github__*` for GitHub, `mcp__atlassian__*` for Jira/Confluence.**
+
 ### GitHub context
 Use `mcp__github__*` tools:
-- `mcp__github__list_pull_requests` — last 20 merged PRs. Read titles and descriptions for convention signals.
+- `mcp__github__list_pull_requests` — last 100 merged PRs. Read titles and descriptions for convention signals.
 - For the 5 most interesting PRs (those mentioning conventions, architecture, or "do not"), fetch full details and review comments.
-- `mcp__github__list_issues` — last 10 open issues. Look for architectural discussions, planned changes, known gotchas.
+- **Mine anti-patterns from PR reviews**: Look for reviewer pushback ("don't do this", "change this approach", "use existing utility instead"), reverted PRs, and PRs that were follow-up fixes for mistakes in previous PRs. Each of these is a candidate "Do NOT" rule.
+- `mcp__github__list_issues` — last 100 open issues. Look for architectural discussions, planned changes, known gotchas.
 - Repository description and topics.
 
 ### Jira context
@@ -144,7 +150,7 @@ Use `mcp__atlassian__*` tools:
 1. Call `mcp__atlassian__getAccessibleAtlassianResources` to get the cloudId.
 2. Determine the Jira project key for this repo. Try: repo name patterns (e.g., `Synapse-Repository-Services` -> `PLFM`), or search issues mentioning the repo name.
 3. `mcp__atlassian__searchJiraIssuesUsingJql` — active epics: `project = <KEY> AND type = Epic AND status != Done ORDER BY updated DESC` (limit 10).
-4. Recent completed tickets (last 30 days) for work patterns.
+4. Recent completed tickets (last 180 days) for work patterns.
 
 If the project key cannot be determined, ask the user.
 

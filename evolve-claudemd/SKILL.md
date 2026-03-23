@@ -42,8 +42,9 @@ Section order (omit any that don't apply):
 5. `## Conventions` — non-obvious patterns not enforced by tooling
 6. `## Architecture` — module boundaries or data flow, only if non-obvious
 7. `## Constraints` — hard rules with reasons
-8. `## Testing` — only if non-standard
-9. `## Related Systems` — sibling repos/services, only if non-obvious
+8. `## Anti-Patterns — Do NOT` — things Claude must AVOID doing, each with evidence and a reason. Sourced from: reverted PRs, reviewer pushback, HACK/FIXME comments protecting intentional patterns, production incidents. Format: "Do NOT X — because Y (evidence: PR #N / revert hash / Jira ticket)."
+9. `## Testing` — only if non-standard
+10. `## Related Systems` — sibling repos/services, only if non-obvious
 
 ---
 
@@ -79,6 +80,8 @@ Section order (omit any that don't apply):
 
 ## Step 2: Gather Evolution Context (parallel agents)
 
+**IMPORTANT: Always use MCP server tools for all GitHub, Jira, and Confluence operations. Never use the `gh` CLI — it may not be available. Use `mcp__github__*` for GitHub, `mcp__atlassian__*` for Jira/Confluence.**
+
 Launch up to 3 agents in parallel:
 
 ### Agent 1 — Code & data model changes
@@ -102,11 +105,16 @@ Categorize changes:
 ### Agent 2 — GitHub context
 Use `mcp__github__*` tools. Parse org/repo from the remote URL.
 
-- `mcp__github__list_pull_requests` — merged PRs since each CLAUDE.md's last update date. Focus on:
+- `mcp__github__list_pull_requests` — last 100 merged PRs since each CLAUDE.md's last update date. Focus on:
   - PR descriptions mentioning conventions, patterns, or architectural decisions
   - Review comments that establish new rules ("always do X", "never do Y", "use Z instead of W")
   - PRs that explicitly changed coding standards or added tooling configs
-- `mcp__github__list_issues` — closed issues since last update (resolved architectural discussions). Open issues (planned changes, known problems).
+- **Mine anti-patterns from PR history**: Specifically search for:
+  - **Reverted PRs** — each revert is a lesson learned. Document what was tried and why it failed as a "Do NOT" rule with the revert hash as evidence.
+  - **Follow-up fix PRs** — PRs that fix mistakes from a previous PR (e.g., swapped test IDs, missed cleanup). These reveal patterns that are easy to get wrong.
+  - **Reviewer pushback** — comments like "don't do this", "use existing utility instead", "this breaks X". Each is a candidate anti-pattern rule.
+  - **Production incidents traced to PRs** — if a PR caused a bug that was later fixed, document the anti-pattern.
+- `mcp__github__list_issues` — last 100 closed issues since last update (resolved architectural discussions). Last 100 open issues (planned changes, known problems).
 - For the most significant PRs (convention-changing), read full details and review comments.
 
 ### Agent 3 — Jira/Confluence context
@@ -115,8 +123,8 @@ Use `mcp__atlassian__*` tools:
 1. Call `mcp__atlassian__getAccessibleAtlassianResources` to get the cloudId.
 2. Determine the Jira project key (from existing CLAUDE.md content, repo name patterns, or ask the user).
 3. `mcp__atlassian__searchJiraIssuesUsingJql`:
-   - Completed tickets since last update: `project = <KEY> AND status = Done AND updated >= "<last_update_date>" ORDER BY updated DESC`
-   - Newly created or resolved epics: `project = <KEY> AND type = Epic AND updated >= "<last_update_date>" ORDER BY updated DESC`
+   - Completed tickets (last 180 days): `project = <KEY> AND status = Done AND updated >= "<180_days_ago_date>" ORDER BY updated DESC`
+   - Newly created or resolved epics: `project = <KEY> AND type = Epic AND updated >= "<180_days_ago_date>" ORDER BY updated DESC`
    - Look for tickets that changed architecture, conventions, data models, or constraints
 4. `mcp__atlassian__searchConfluenceUsingCql`:
    - Pages modified since last update: `text ~ "<repo-name>" AND type = page AND lastModified >= "<last_update_date>" ORDER BY lastModified DESC`
@@ -160,7 +168,7 @@ Before presenting changes to the user:
 
 ## Step 5: Check for Coverage Gaps (with Deep-Dive)
 
-**Every directory is a candidate for CLAUDE.md coverage.** Scan all directories in the repo and verify that each one's non-obvious patterns are documented *somewhere* — either in its own CLAUDE.md, a parent's, or an ancestor's.
+**Every directory is a candidate for CLAUDE.md coverage — including non-code directories** (e.g., `docs/` with complex build systems like MkDocs/mkdocstrings). Scan all directories in the repo and verify that each one's non-obvious patterns are documented *somewhere* — either in its own CLAUDE.md, a parent's, or an ancestor's.
 
 ### Deep-dive for convention density
 
@@ -168,7 +176,7 @@ For each directory that currently lacks its own CLAUDE.md, launch Explore agents
 - **Return type conventions** — inconsistencies, reversed parameter orders, non-obvious tuple structures
 - **Conditional/hidden behavior** — template method steps that are skipped under certain conditions
 - **Reusable utility functions** — that Claude would reinvent if not told they exist
-- **Hack comments** — grep for `HACK`, `FIXME`, `WORKAROUND`, `XXX`
+- **Hack comments** — grep for `HACK`, `FIXME`, `WORKAROUND`, `XXX`, `DO NOT`, `NEVER`, `WARNING`, `CAREFUL`. Each is a candidate anti-pattern guardrail — document what must NOT be changed and why.
 - **Strict enforcement** — kwargs assertions, ordering dependencies, required parameters
 - **Naming inconsistencies** — mixed conventions that Claude might "fix" incorrectly
 - **Hardcoded values** — IDs, URLs, magic numbers duplicated across files
@@ -181,7 +189,7 @@ A directory with many of these patterns has **high convention density** and need
 ### Coverage decisions
 
 1. **Needs own file**: Has conventions, constraints, or patterns that differ from its parent. Indicators: own build file, specialized tech, distinct coding patterns, high dependency fan-in, gotcha patterns from bug-fix PRs, **high convention density** (many behavioral patterns even with few files).
-2. **Roll up to parent**: Simple enough (few files, no distinct patterns, follows sibling conventions, **low convention density**) that a mention in the parent CLAUDE.md suffices.
+2. **Roll up to parent**: Simple enough (few files, no distinct patterns, follows sibling conventions, **low convention density**) that a mention in the parent CLAUDE.md suffices. Use a clearly labeled `### Rolled-up subdirectories` section in the parent to name each covered child — so readers know it was intentionally covered there, not forgotten.
 3. **Already covered by ancestor**: Patterns are already documented in an existing ancestor's CLAUDE.md.
 
 Build a coverage map showing where every directory's patterns are (or should be) documented. Present gaps in the change analysis (Step 7) so no directory falls through the cracks.
@@ -223,6 +231,11 @@ For each CLAUDE.md, present a structured report:
 - Constraint: "Never use @Autowired on fields — constructor injection required for testability" (from PR #4521 review)
 - Data Models: New search configuration schema in lib/lib-auto-generated — generates POJOs consumed by 3 modules
 - Convention: Workers in search/ package use ConcurrentWorkerStack exclusively
+
+### Anti-pattern guardrails to add:
+- Do NOT: "Do NOT refactor X to Y — a previous attempt was reverted (hash) because Z" (from reverted PR)
+- Do NOT: "Do NOT use bare set() for DataFrame construction — non-deterministic ordering broke tests (PR #621)" (from production incident)
+- Do NOT: "Do NOT write custom column checks — use existing utility process_functions.checkColExist()" (from reviewer pushback in PR #622)
 
 ### Data model changes:
 - New JSON schemas: SearchConfiguration.json, SynonymSet.json — codegen pipeline produces POJOs
