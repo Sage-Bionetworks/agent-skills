@@ -49,6 +49,14 @@ Section order (omit any section that doesn't apply — no empty headings):
 9. `## Testing` — only if the approach is non-standard
 10. `## Related Systems` — sibling repos/services this interacts with, only if the relationship is non-obvious
 
+### CLAUDE.md File Types & Locations
+
+| Type | Location | Purpose |
+|------|----------|---------|
+| Project root | `./CLAUDE.md` | Primary project context (checked into git, shared with team) |
+| Package-specific | `./packages/*/CLAUDE.md` | Module-level context in monorepos |
+| Subdirectory | Any nested location | Feature/domain-specific context |
+
 ### Module-Level Files
 Same format but scoped to the module. Even shorter — often just Project + Conventions + Constraints.
 
@@ -59,6 +67,44 @@ Same format but scoped to the module. Even shorter — often just Project + Conv
 - **Cover children from the parent** when multiple subdirectories share the same patterns — document once in the parent rather than repeating in each child. Use a clearly labeled `### Rolled-up subdirectories` section in the parent to name each covered child and briefly describe what it contains — so readers know the child was intentionally covered here, not forgotten.
 
 The goal is full coverage: every directory's non-obvious patterns should be documented *somewhere* — either in its own CLAUDE.md or in an ancestor's. No directory should fall through the cracks.
+
+---
+
+## Quality Validation
+
+Before presenting generated content to the user, score each file against this rubric. Include the score in the Step 5 discovery summary.
+
+### Scoring Rubric
+
+| Criterion | Max Points | What to check |
+|-----------|-----------|---------------|
+| Commands/workflows | 20 | Are build, test, lint, deploy commands present with context? |
+| Architecture clarity | 20 | Can Claude understand codebase structure, module relationships, entry points? |
+| Non-obvious patterns | 15 | Are gotchas, quirks, workarounds, and "why we do it this way" captured? |
+| Conciseness | 15 | No filler, no obvious info, no redundancy with code comments? |
+| Currency | 15 | Do commands work? Are file references accurate? Tech stack current? |
+| Actionability | 15 | Are instructions executable and copy-paste ready? Paths real? |
+
+### Grades
+
+- **A (90-100)**: Comprehensive, current, actionable
+- **B (70-89)**: Good coverage, minor gaps
+- **C (50-69)**: Basic info, missing key sections
+- **D (30-49)**: Sparse or outdated
+- **F (0-29)**: Missing or severely outdated
+
+Target grade A for all generated files. If a file scores below B, revisit the generation rules and fill gaps before presenting.
+
+### Red Flags Checklist
+
+Before finalizing any file, verify none of these are present:
+- Commands that would fail (wrong paths, missing deps)
+- References to files/folders that don't exist
+- Outdated tech versions
+- Generic advice not specific to the project
+- Empty "TODO" items
+- Duplicate info across multiple CLAUDE.md files
+- Copy-paste from templates without customization
 
 ---
 
@@ -177,6 +223,26 @@ Before presenting anything to the user, apply the content principles:
 5. **Ensure every constraint has a reason.**
 6. **Check data model items**: only include shape constraints Claude would get wrong without guidance. Skip shapes that are self-evident from reading schema files.
 
+### What NOT to Add — Examples
+
+| Bad (remove) | Why it fails | Good (keep) |
+|--------------|-------------|-------------|
+| "The `UserService` class handles user operations." | Obvious from class name | *(omit entirely)* |
+| "Always write tests for new features." | Generic advice, not project-specific | *(omit entirely)* |
+| "The authentication system uses JWT tokens. JWT (JSON Web Tokens) are an open standard (RFC 7519)..." | Verbose, encyclopedic | "Auth: JWT with HS256, tokens in `Authorization: Bearer <token>` header." |
+| "Use meaningful variable names." | Universal advice | *(omit entirely)* |
+| "We fixed a bug in commit abc123 where login broke." | One-off fix, won't recur | *(omit entirely)* |
+
+### Validation Checklist
+
+Before finalizing, verify:
+- [ ] Each item is project-specific, not generic advice
+- [ ] No obvious info that Claude can infer from code
+- [ ] Commands are copy-paste ready and verified against config files
+- [ ] All file paths reference real, existing files
+- [ ] Every constraint has a "— because Y" reason
+- [ ] This is the most concise way to express each item
+
 ---
 
 ## Step 5: Present Discovery Summary
@@ -224,6 +290,8 @@ Ask the user to confirm, correct, or skip sections before generating.
 
 ## Step 6: Generate Files
 
+See [references/templates.md](references/templates.md) for starter templates by project type.
+
 For each approved CLAUDE.md:
 
 1. Start with `<!-- Last reviewed: YYYY-MM -->` using the current month.
@@ -237,10 +305,23 @@ For each approved CLAUDE.md:
 
 ## Step 7: Review and Write
 
-1. Present each generated file's full content to the user.
-2. Apply any corrections they request.
-3. Write all files using the Write tool.
-4. Optionally commit with message: `Add initial CLAUDE.md files for AI-assisted development`
+1. Present each generated file's full content to the user using diff format for easy review:
+   ```
+   ### File: ./CLAUDE.md
+   **Quality Score: XX/100 (Grade: X)**
+
+   ```diff
+   + ## Project
+   +
+   + <content>
+   ```
+
+   > **Why this section helps:** <one-line justification>
+   ```
+2. Run the Red Flags Checklist from the Quality Validation section before presenting.
+3. Apply any corrections the user requests.
+4. Write all files using the Write tool.
+5. Optionally commit with message: `Add initial CLAUDE.md files for AI-assisted development`
 
 ---
 

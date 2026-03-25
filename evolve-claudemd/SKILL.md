@@ -134,6 +134,25 @@ Use `mcp__atlassian__*` tools:
 
 ## Step 3: Full Accuracy Audit
 
+### Quality Scoring
+
+Before auditing details, score each existing CLAUDE.md against this rubric to establish a baseline:
+
+| Criterion | Max Points | What to check |
+|-----------|-----------|---------------|
+| Commands/workflows | 20 | Are build, test, lint, deploy commands present with context? |
+| Architecture clarity | 20 | Can Claude understand codebase structure, module relationships, entry points? |
+| Non-obvious patterns | 15 | Are gotchas, quirks, workarounds, and "why we do it this way" captured? |
+| Conciseness | 15 | No filler, no obvious info, no redundancy with code comments? |
+| Currency | 15 | Do commands work? Are file references accurate? Tech stack current? |
+| Actionability | 15 | Are instructions executable and copy-paste ready? Paths real? |
+
+Grades: **A** (90-100), **B** (70-89), **C** (50-69), **D** (30-49), **F** (0-29)
+
+Record the baseline score. After proposing changes in Step 7, project the new score to show improvement.
+
+### Line-by-Line Verification
+
 For each CLAUDE.md, read its content line by line and verify every concrete reference:
 
 - **File paths mentioned** — still exist? Use Glob to check.
@@ -163,6 +182,25 @@ Before presenting changes to the user:
 3. **Remove anything now enforced by new tooling configs.** If `.eslintrc` was added and it enforces a convention currently in CLAUDE.md, flag that line for removal.
 4. **Keep files concise but complete.** Every line must earn its place, but do not cut behavioral conventions, reusable utility lists, or hack documentation just to stay short. Thoroughness over brevity.
 5. **Data model items**: only include shape constraints Claude would get wrong without guidance.
+
+### Validation Checklist
+
+Before finalizing proposed changes, verify:
+- [ ] Each addition is project-specific, not generic advice
+- [ ] No obvious info that Claude can infer from code
+- [ ] Commands are copy-paste ready and verified against config files
+- [ ] All file paths reference real, existing files
+- [ ] Every constraint has a "— because Y" reason
+- [ ] This is the most concise way to express each item
+
+### What NOT to Add — Examples
+
+| Bad (remove) | Why it fails |
+|--------------|-------------|
+| "The `UserService` class handles user operations." | Obvious from class name |
+| "Always write tests for new features." | Generic advice, not project-specific |
+| Verbose multi-paragraph explanation of a concept | Condense to one actionable line |
+| "We fixed a bug in commit abc123 where login broke." | One-off fix, won't recur |
 
 ---
 
@@ -213,7 +251,24 @@ If not accessible locally, check via GitHub API if possible.
 
 **For large change sets** (many commits since last update): chunk findings by directory/module. Process each chunk fully (code + PRs + Jira). Present findings incrementally so the user can approve as you go. Large change sets deserve MORE scrutiny, not less — they represent the highest risk of CLAUDE.md drift.
 
-For each CLAUDE.md, present a structured report:
+Start with an executive summary, then present per-file reports:
+
+```
+## Evolution Summary
+
+| File | Last Updated | Commits Since | Current Score | Projected Score |
+|------|-------------|---------------|---------------|-----------------|
+| ./CLAUDE.md | 2026-01-15 | 147 | 62/100 (C) | 85/100 (B) |
+| ./lib/jdomodels/CLAUDE.md | 2026-02-20 | 43 | 78/100 (B) | 91/100 (A) |
+
+- Files found: X
+- Files needing update: X
+- Stale references found: X
+- New anti-patterns discovered: X
+- Coverage gaps: X directories
+```
+
+Then for each CLAUDE.md, present a structured report:
 
 ```
 ## ./CLAUDE.md (last updated: YYYY-MM-DD, N commits since)
@@ -298,3 +353,13 @@ Do NOT commit without explicit user approval.
 - **Completed Jira epic lifts a constraint**: Flag the constraint for removal or update. Include the epic key and completion date as evidence.
 - **File growing very large (200+ lines)**: Consider whether a child directory deserves its own CLAUDE.md to offload content. Present the split option to the user.
 - **Repo has no existing CLAUDE.md files**: Warn the user and suggest using `/bootstrap-claudemd` instead.
+
+---
+
+## User Tips
+
+After completing evolution, share these tips with the user:
+
+- **Keep it concise**: CLAUDE.md is part of the prompt — every line costs context. Dense is better than verbose.
+- **Actionable commands**: All documented commands should be copy-paste ready
+- **Regular maintenance**: Run `/evolve-claudemd` periodically (e.g., monthly or after major feature work) to prevent drift
