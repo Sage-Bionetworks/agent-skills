@@ -1,6 +1,6 @@
 ---
 name: synapse-python-client
-description: Reference and code patterns for the Synapse Python client (synapseclient) — use when writing code that uploads/downloads files, queries tables, manages projects/folders, or tracks provenance on Synapse (synapse.org). Uses the modern synapseclient.models API.
+description: Use when writing code that interacts with Synapse (synapse.org) — uploads/downloads, table queries, projects/folders, provenance. Uses the modern synapseclient.models API.
 ---
 
 # Synapse Python Client Skill
