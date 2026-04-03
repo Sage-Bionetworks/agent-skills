@@ -1,3 +1,13 @@
+---
+name: skill-name
+description: |
+  Write 1-2 sentences that answer: WHEN should Claude pick this skill over others?
+  Lead with the precondition ("Use when X exists / is needed"), not just what it does.
+  Call out what it does NOT do if there's a sibling skill that overlaps (e.g., "Do NOT use if Y — use skill-z instead").
+  Good: "Use when writing code that interacts with Synapse (synapse.org) — uploads, downloads, table queries. Uses the modern synapseclient.models API."
+  Bad: "Helps with Synapse." (too vague — Claude can't disambiguate from this)
+---
+
 # [Skill Name]
 
 ## Overview
