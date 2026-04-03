@@ -6,7 +6,7 @@ description: |
   Call out what it does NOT do if there's a sibling skill that overlaps (e.g., "Do NOT use if Y — use skill-z instead").
   Good: "Use when writing code that interacts with Synapse (synapse.org) — uploads, downloads, table queries. Uses the modern synapseclient.models API."
   Bad: "Helps with Synapse." (too vague — Claude can't disambiguate from this)
-  HARD LIMIT: 250 characters max — Claude Code truncates at 250. Front-load the key signal.
+  Keep it under 300 characters — front-load the key signal.
 ---
 
 # [Skill Name]
