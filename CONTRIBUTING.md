@@ -12,7 +12,7 @@ Thanks for contributing to Agent Skills! Follow these steps to add a new skill.
 
    Use lowercase kebab-case for the directory name (e.g., `my-tool-python-client`).
 
-3. **Write your skill** using the template at [`sage-internal/skills/_template/SKILL.md`](sage-internal/skills/_template/SKILL.md) as a guide. See [`synapse/skills/synapse-python-client/SKILL.md`](synapse/skills/synapse-python-client/SKILL.md) for a complete example.
+3. **Write your skill** using the template at [`_template/SKILL.md`](_template/SKILL.md) as a guide. See [`synapse/skills/synapse-python-client/SKILL.md`](synapse/skills/synapse-python-client/SKILL.md) for a complete example.
 
 4. **Add your skill to the table** in `README.md`.
 
