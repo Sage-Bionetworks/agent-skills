@@ -194,6 +194,5 @@ file.store()
 
 ## Reference
 - Main Docs: https://python-docs.synapse.org/en/stable/
-- Experimental API Reference: https://python-docs.synapse.org/en/stable/reference/experimental/
 - File Operations: https://python-docs.synapse.org/en/stable/reference/experimental/sync/file/
 - Authentication Guide: https://python-docs.synapse.org/en/stable/tutorials/authentication/

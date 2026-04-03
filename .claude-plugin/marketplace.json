@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "sage-bionetworks",
+  "description": "Agent skills for Sage Bionetworks — data science, bioinformatics, and research tooling.",
+  "owner": {
+    "name": "Sage Bionetworks",
+    "url": "https://sagebionetworks.org"
+  },
+  "plugins": [
+    {
+      "name": "agent-skills",
+      "description": "Data science, bioinformatics, and research tooling skills for Sage Bionetworks",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Sage-Bionetworks/agent-skills.git"
+      },
+      "category": "development",
+      "homepage": "https://github.com/Sage-Bionetworks/agent-skills"
+    }
+  ]
+}
