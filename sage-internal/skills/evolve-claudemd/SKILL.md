@@ -1,6 +1,6 @@
 ---
 name: evolve-claudemd
-description: Update existing CLAUDE.md files by analyzing code changes, GitHub PRs/issues, Jira/Confluence since last modification, with full accuracy audit.
+description: Update CLAUDE.md files that already exist in a repo — use when CLAUDE.md is present but stale. Analyzes code changes, GitHub PRs/issues, Jira/Confluence since last modification, with full accuracy audit. Do NOT use if no CLAUDE.md exists yet (use bootstrap-claudemd instead).
 ---
 
 # Evolve CLAUDE.md
