@@ -8,9 +8,16 @@
   },
   "plugins": [
     {
-      "name": "agent-skills",
-      "description": "Data science, bioinformatics, and research tooling skills for Sage Bionetworks",
-      "source": "./",
+      "name": "community",
+      "description": "Community-facing skills for Sage Bionetworks open science tools — Synapse platform, data sharing, and bioinformatics.",
+      "source": "./community",
+      "category": "development",
+      "homepage": "https://github.com/Sage-Bionetworks/agent-skills"
+    },
+    {
+      "name": "sage",
+      "description": "Internal Sage Bionetworks skills for developer workflows — CLAUDE.md generation, code review, and team tooling.",
+      "source": "./sage",
       "category": "development",
       "homepage": "https://github.com/Sage-Bionetworks/agent-skills"
     }

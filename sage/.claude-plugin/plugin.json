@@ -1,0 +1,10 @@
+{
+  "name": "sage",
+  "description": "Internal Sage Bionetworks skills for developer workflows — CLAUDE.md generation, code review, and team tooling.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sage Bionetworks",
+    "url": "https://sagebionetworks.org"
+  },
+  "license": "Apache-2.0"
+}
