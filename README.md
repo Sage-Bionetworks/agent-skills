@@ -6,6 +6,7 @@ A collection of agent skills for Sage Bionetworks — data science, bioinformati
 
 ```
 /plugin marketplace add Sage-Bionetworks/agent-skills
+/plugin install agent-skills
 ```
 
 ## Available Skills
