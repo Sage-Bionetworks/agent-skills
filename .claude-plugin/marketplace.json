@@ -10,10 +10,7 @@
     {
       "name": "agent-skills",
       "description": "Data science, bioinformatics, and research tooling skills for Sage Bionetworks",
-      "source": {
-        "source": "url",
-        "url": "https://github.com/Sage-Bionetworks/agent-skills.git"
-      },
+      "source": "./",
       "category": "development",
       "homepage": "https://github.com/Sage-Bionetworks/agent-skills"
     }
