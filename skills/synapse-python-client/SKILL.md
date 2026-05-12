@@ -361,12 +361,17 @@ file.store()
 ## Operations Layer (Factory API)
 ```python
 from synapseclient.operations import get, store, delete
+from synapseclient.operations import FileOptions, ActivityOptions
 
-# Generic get/store/delete with options
-from synapseclient.operations import FileOptions, StoreFileOptions
+# Get entity by ID with options
+entity = get(
+    synapse_id="syn123456",
+    file_options=FileOptions(download_file=False),
+    activity_options=ActivityOptions(include_activity=True)
+)
 
-entity = get(entity_id="syn123456", options=FileOptions(download_file=False))
-store(entity, options=StoreFileOptions(create_or_update=True))
+# Store and delete
+store(entity)
 delete(entity)
 ```
 
