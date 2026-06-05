@@ -14,6 +14,7 @@ A collection of agent skills for Sage Bionetworks — data science, bioinformati
 | Skill | Description | Category |
 |-------|-------------|----------|
 | [synapse-python-client](skills/synapse-python-client/SKILL.md) | Interact with Synapse (synapse.org) for biomedical data sharing using the modern Python client | Bioinformatics |
+| [nih-reporter](skills/nih-reporter/SKILL.md) | Query the NIH RePORTER API (projects + publications) — payload construction, pagination, rate-limit handling, and the criteria↔include↔response field-name mapping | Research |
 | [synapse-data-curation](skills/synapse-data-curation/SKILL.md) | Advanced Synapse REST API patterns for data curation: annotations2 etag handling, Dataset entity creation with dynamic columns, JSON Schema binding, and wiki management | Bioinformatics |
 | [scientific-metadata-extraction](skills/scientific-metadata-extraction/SKILL.md) | Extract and normalize scientific dataset metadata from GEO, SRA/ENA, PubMed, and BioSample: per-sample ID derivation, author normalization, assay type determination, and a 4-tier gap-fill strategy | Bioinformatics |
 | [bootstrap-claudemd](skills/bootstrap-claudemd/SKILL.md) | Generate a new CLAUDE.md from scratch by exploring a codebase | Developer Tools |
