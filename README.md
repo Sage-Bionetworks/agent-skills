@@ -19,6 +19,7 @@ A collection of agent skills for Sage Bionetworks — data science, bioinformati
 | [scientific-metadata-extraction](skills/scientific-metadata-extraction/SKILL.md) | Extract and normalize scientific dataset metadata from GEO, SRA/ENA, PubMed, and BioSample: per-sample ID derivation, author normalization, assay type determination, and a 4-tier gap-fill strategy | Bioinformatics |
 | [bootstrap-claudemd](skills/bootstrap-claudemd/SKILL.md) | Generate a new CLAUDE.md from scratch by exploring a codebase | Developer Tools |
 | [evolve-claudemd](skills/evolve-claudemd/SKILL.md) | Update existing CLAUDE.md files by analyzing code changes and auditing accuracy | Developer Tools |
+| [metadata-submission](skills/metadata-submission/SKILL.md) | Submit and validate file-level metadata in a Synapse folder: detect the bound JSON schema, build or consume a CSV manifest, apply annotations, and report validation statistics | Bioinformatics |
 
 ## Contributing
 
