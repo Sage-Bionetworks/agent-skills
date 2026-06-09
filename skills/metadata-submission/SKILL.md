@@ -87,65 +87,9 @@ Ask the user for the Synapse folder ID containing the files to annotate.
 folder_id = "syn12345678"   # user-supplied synID of the files folder
 ```
 
-### Step 2 — Confirm Files Exist in the Folder
+### Step 2 — Check for a Bound JSON Schema
 
-Check that the folder has at least one file before proceeding. An empty folder means data hasn't been uploaded yet.
-
-```python
-def count_folder_files(folder_id: str) -> int:
-    """Return the number of FILE children in the folder."""
-    resp = syn_post("/entity/children", {
-        "parentId": folder_id,
-        "includeTypes": ["file"],
-        "includeTotalChildCount": True,
-    })
-    return resp.get("totalChildCount", 0)
-
-n_files = count_folder_files(folder_id)
-print(f"{n_files} file(s) in {folder_id}")
-```
-
-If `n_files == 0`, the data hasn't been uploaded yet. Ask the user for the **local directory path** containing the files, then scan filenames for sensitive content before proceeding with the upload.
-
-#### 2a — Review Filenames for Sensitive Content
-
-Before generating the upload manifest, sample filenames from the local directory and show them to the user. Ask whether any contain sensitive or identifiable information before proceeding.
-
-```python
-from pathlib import Path
-import random
-
-def sample_filenames(local_dir: str, n: int = 20) -> list[str]:
-    """Return up to n filenames from the local directory (recursive)."""
-    all_files = [p.name for p in Path(local_dir).rglob("*") if p.is_file()]
-    return random.sample(all_files, min(n, len(all_files)))
-
-names = sample_filenames("/path/to/local/data/")
-print(f"Sample of filenames ({len(names)} shown):")
-for name in names:
-    print(f"  {name}")
-```
-
-Review the sampled names yourself for anything that looks sensitive (patient names, clinical record numbers, PII-suggestive terms), then report what you observed to the user. For example: _"I reviewed a sample of 20 filenames — they appear to follow a `sampleID_assay_fileformat` convention with no obvious identifiers."_ Then ask the user to confirm that the files not in the sample are also safe to upload before proceeding.
-
-#### 2b — Generate Manifest and Sync
-
-Once the user confirms the filenames are safe, generate the upload manifest and sync:
-
-```
-# 1. Generate a manifest TSV from the local folder
-synapse manifest --parent-id syn12345678 /path/to/local/data/ --manifest-file manifest.tsv
-
-# 2. (Optional) validate without uploading
-synapse sync --dryRun manifest.tsv
-
-# 3. Upload files to Synapse
-synapse sync manifest.tsv
-```
-
-The `manifest` command walks the local directory and produces a TSV with `path` and `parent` columns for every file. The `sync` command reads that TSV and uploads each file to the specified parent folder. Once the upload completes, return to Step 1 with the same `folder_id`.
-
-### Step 4 — Check for a Bound JSON Schema
+This is a hard stop: without a bound schema there is no data standard to submit against, and no basis for building a manifest.
 
 ```python
 def get_bound_schema(folder_id: str) -> dict | None:
@@ -173,7 +117,7 @@ else:
 
 If no schema is bound, **stop and direct the contributor to their data manager**. Do not invent a schema or continue.
 
-### Step 5 — Fetch Schema Properties
+### Step 3 — Fetch Schema Properties
 
 ```python
 def get_schema_properties(schema_uri: str) -> tuple[dict, list[str]]:
@@ -190,7 +134,62 @@ print(f"Required: {required_fields}")
 
 Fields with `"enum": []` (an empty list) have no valid values in the current schema — skip them or any value set on them will fail validation.
 
-### Step 6A — Accept an Existing CSV Manifest
+### Step 4 — Confirm Files Exist in the Folder
+
+```python
+def count_folder_files(folder_id: str) -> int:
+    """Return the number of FILE children in the folder."""
+    resp = syn_post("/entity/children", {
+        "parentId": folder_id,
+        "includeTypes": ["file"],
+        "includeTotalChildCount": True,
+    })
+    return resp.get("totalChildCount", 0)
+
+n_files = count_folder_files(folder_id)
+print(f"{n_files} file(s) in {folder_id}")
+```
+
+If `n_files == 0`, data hasn't been uploaded yet. Ask the user for the **local directory path**, then follow Steps 4a–4b before continuing.
+
+#### 4a — Review Filenames for Sensitive Content
+
+Sample filenames from the local directory, review them yourself for anything sensitive (patient names, clinical record numbers, PII-suggestive terms), then report what you observed. For example: _"I reviewed a sample of 20 filenames — they appear to follow a `sampleID_assay_fileformat` convention with no obvious identifiers."_ Ask the user to confirm that the files not in the sample are also safe to upload before proceeding.
+
+```python
+from pathlib import Path
+import random
+
+def sample_filenames(local_dir: str, n: int = 20) -> list[str]:
+    """Return up to n filenames from the local directory (recursive)."""
+    all_files = [p.name for p in Path(local_dir).rglob("*") if p.is_file()]
+    return random.sample(all_files, min(n, len(all_files)))
+
+names = sample_filenames("/path/to/local/data/")
+```
+
+#### 4b — Generate Upload Manifest and Sync
+
+Once the user confirms the filenames are safe, generate the upload manifest. The `synapse manifest` command produces a TSV with `path` and `parent` columns — you can add metadata columns from the schema directly to this TSV before syncing, combining upload and annotation in a single step.
+
+```
+# 1. Generate the upload manifest
+synapse manifest --parent-id syn12345678 /path/to/local/data/ --manifest-file manifest.tsv
+```
+
+Open `manifest.tsv` and add columns for the schema's required fields (from `required_fields`) and any optional fields the user can populate now. Valid enum values for each field are in `properties[field]["enum"]`. Then sync:
+
+```
+# 2. (Optional) validate without uploading
+synapse sync --dryRun manifest.tsv
+
+# 3. Upload files to Synapse
+synapse sync manifest.tsv
+```
+
+After upload completes, re-run `count_folder_files(folder_id)` to confirm files are present, then continue to Step 5.
+
+### Step 5A — Accept an Existing CSV Manifest
 
 If the user already has a manifest CSV, load and validate it:
 
@@ -209,7 +208,7 @@ def load_manifest(csv_path: str, required_fields: list[str]) -> pd.DataFrame:
 manifest = load_manifest("my_manifest.csv", required_fields)
 ```
 
-### Step 6B — Build a CSV Manifest Template from the Schema
+### Step 5B — Build a CSV Manifest Template from the Schema
 
 If the user has no manifest, scaffold one from the schema and the files currently in the folder:
 
@@ -260,7 +259,7 @@ template = build_manifest_template(folder_id, properties, required_fields)
 
 After building the template, pause and ask the user to fill in the CSV. Once they return it, continue with `load_manifest()`.
 
-### Step 7 — Apply Annotations from the Manifest
+### Step 6 — Apply Annotations from the Manifest
 
 ```python
 def set_file_annotations(entity_id: str, fields: dict, max_attempts: int = 3):
@@ -320,7 +319,7 @@ def apply_manifest(manifest: pd.DataFrame, required_fields: list[str],
 failures = apply_manifest(manifest, required_fields)
 ```
 
-### Step 8 — Validate and Report Statistics
+### Step 7 — Validate and Report Statistics
 
 ```python
 def get_validation_stats(folder_id: str) -> dict:
@@ -360,9 +359,9 @@ if n_invalid > 0:
             print(f"  - {msg}")
 ```
 
-### Step 9 — Triage and Correct Errors
+### Step 8 — Triage and Correct Errors
 
-Classify each error, correct in the manifest, and re-run Steps 7–8.
+Classify each error, correct in the manifest, and re-run Steps 6–7.
 
 | Error message pattern | Cause | Action |
 |---|---|---|
