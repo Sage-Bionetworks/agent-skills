@@ -31,11 +31,6 @@ These rules govern every line written. Violating them produces files that are to
 
 ## Output Format
 
-Each CLAUDE.md starts with:
-```
-<!-- Last reviewed: YYYY-MM -->
-```
-
 Section order (omit any section that doesn't apply — no empty headings):
 
 1. `## Project` — 2-4 sentences: what this does, what system it belongs to
@@ -294,12 +289,11 @@ See [references/templates.md](references/templates.md) for starter templates by 
 
 For each approved CLAUDE.md:
 
-1. Start with `<!-- Last reviewed: YYYY-MM -->` using the current month.
-2. Write each applicable section following the output format.
-3. Omit sections that don't apply — no empty headings.
-4. Use imperative voice throughout.
-5. Keep files concise but complete. Every line must earn its place, but do NOT cut behavioral conventions or reusable utility lists just to hit an arbitrary line count. Thoroughness over brevity.
-6. For module-level files, only include what differs from the root CLAUDE.md. Include: reusable utilities that must not be reinvented, non-obvious return types, conditional behavior, mock/test patterns, hack workarounds, naming inconsistencies.
+1. Write each applicable section following the output format.
+2. Omit sections that don't apply — no empty headings.
+3. Use imperative voice throughout.
+4. Keep files concise but complete. Every line must earn its place, but do NOT cut behavioral conventions or reusable utility lists just to hit an arbitrary line count. Thoroughness over brevity.
+5. For module-level files, only include what differs from the root CLAUDE.md. Include: reusable utilities that must not be reinvented, non-obvious return types, conditional behavior, mock/test patterns, hack workarounds, naming inconsistencies.
 
 ---
 
