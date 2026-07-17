@@ -7,8 +7,6 @@ Use these as starting structures. Only include sections relevant to the project.
 ## Template: Minimal Project Root
 
 ```markdown
-<!-- Last reviewed: YYYY-MM -->
-
 ## Project
 
 <2-4 sentences: what this does, what system it belongs to>
@@ -37,8 +35,6 @@ Use these as starting structures. Only include sections relevant to the project.
 ## Template: Comprehensive Project Root
 
 ```markdown
-<!-- Last reviewed: YYYY-MM -->
-
 ## Project
 
 <2-4 sentences>
@@ -95,8 +91,6 @@ Use these as starting structures. Only include sections relevant to the project.
 ## Template: Package/Module
 
 ```markdown
-<!-- Last reviewed: YYYY-MM -->
-
 ## Project
 
 <Purpose of this module within the larger system>
@@ -115,8 +109,6 @@ Use these as starting structures. Only include sections relevant to the project.
 ## Template: Monorepo Root
 
 ```markdown
-<!-- Last reviewed: YYYY-MM -->
-
 ## Project
 
 <Description of the monorepo and its orchestration>
