@@ -207,7 +207,8 @@ Two lessons, in order of importance:
 
 1. **The motivation is an input, not an output.** It comes from the ticket, the commit
    bodies, or the author. When none of them supply it, ask or leave
-   `TODO(author): why this work exists`. Do not derive it from the diff — a fluent invented
+   `- [ ] ⚠️ **TODO(author):** why does this work exist?` as a checkpoint. Do not derive
+   it from the diff — a fluent invented
    rationale is harder for the author to catch than a blank.
 2. **Match the author's register.** Short declarative sentences, plain nouns, no
    consequence-diagnosis. If a line would not survive the author saying it out loud to a

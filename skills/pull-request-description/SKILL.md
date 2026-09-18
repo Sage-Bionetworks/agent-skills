@@ -140,7 +140,8 @@ into the 3-5 things that actually change behavior.
   commit bodies don't state the why, do **not** synthesize a plausible one from the
   change itself — a well-written invented motivation is the single most likely reason an
   author rewrites your draft instead of editing it. Ask them in one line ("what prompted
-  this?"), or leave `TODO(author): why this work exists` and draft everything else. An
+  this?"), or leave a checkpoint — `- [ ] ⚠️ **TODO(author):** why does this work exist?`
+  — and draft everything else. An
   empty Problem section costs the author thirty seconds; a convincing wrong one costs a
   rewrite, or ships and misleads the reviewer.
 - **Solution** — 3-5 bullets. Lead each with a bolded noun: the component, file, or
@@ -181,15 +182,35 @@ See: https://github.com/Sage-Bionetworks/synapsePythonClient/security/dependabot
 That's a complete, merged PR description from this repo. Nothing more was needed. If
 Testing genuinely has content ("ran the affected DAG locally"), one line is enough.
 
+#### Author checkpoints
+
+Anything you could not verify or were not told becomes a **checkpoint** — a task the
+author ticks off, not a sentence they have to spot. Always this shape:
+
+```markdown
+- [ ] ⚠️ **TODO(author):** confirm the finalizer task resumed in prod
+```
+
+An unticked box, the ⚠️, and the bolded `TODO(author):` label, in that order. The reason
+for all three: the checkbox makes it an item of work that stays visibly open in the PR
+UI, the emoji survives skimming, and the label says who owns it. Keep the boxes unticked
+— the same rule as the checklist items a template ships.
+
+Put each checkpoint in the section it belongs to (an unverified test under Testing, an
+unknown motivation under Problem), not in a pile at the bottom, so the gap sits where a
+reviewer would otherwise read a claim. If the draft has several, that is fine and worth
+saying in your handover line — a PR that admits four open questions is more useful than
+one that quietly answers them wrong.
+
 ### 7. Check the draft before handing it over
 
 - **Nothing invented.** This is the one that matters, and it covers the Problem section
   as much as Testing. Do not write that tests passed, that a script was run, or that a
   value was verified unless it happened in this session or appears in the commits — and
   do not state *why* the work exists unless the ticket, the commits, or the user said so.
-  When something is needed but unknown, write it as a placeholder the human will notice
-  — `TODO(author): confirm the DAG run` — rather than a confident sentence they might
-  not catch.
+  When something is needed but unknown, write it as an author checkpoint —
+  `- [ ] ⚠️ **TODO(author):** confirm the DAG run` — rather than a confident sentence
+  they might not catch.
 - Every claim traceable to the diff, the commits, the ticket, or the user — motivation
   included.
 - Read the Problem section back and ask: could I have written this without knowing
