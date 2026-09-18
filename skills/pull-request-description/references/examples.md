@@ -176,3 +176,39 @@ Three problems: the Problem section says nothing the title didn't, the Solution 
 one edit across three bullets, and the Testing claims ("verified no breaking API
 changes", "no regressions observed") are things the author may not have actually done.
 That last one is the most damaging — a reviewer who trusts it skips a check.
+---
+
+## Contrast: an invented problem statement vs. the author's
+
+From this skill's own PR (agent-skills #15). The draft's Problem section, written from
+the diff alone:
+
+> PR descriptions across our repos are inconsistent in a way that costs reviewers time in
+> both directions: some changes ship with a title and nothing else, while one-line
+> dependency bumps arrive padded into three headed sections. Each repo also has its own
+> template shape — `# **Problem:**` with the bold and colon in synapsePythonClient and
+> orca-recipes, plain `# Problem` plus a required `Ticket:` line in snowflake — and those
+> differences are easy to get wrong when writing by hand or from memory.
+
+What the author actually wrote:
+
+> For simple changes, we can't force them into a problem-solution framework. We don't have
+> a "common interface" for writing PR descriptions. Each dev has to use their own AI agent
+> to generate the PR description.
+
+The draft is three times longer and carries less. Every symptom in it was reverse-engineered
+from the skill's contents — nobody observed reviewers losing time "in both directions," and
+the repo-template paragraph is a summary of the diff wearing a problem's clothes. The
+author's version names the actual driver, which is organizational and appears nowhere in
+the diff: there is no shared interface, so every developer improvises one with their own
+agent. No amount of reading the change would have produced that sentence.
+
+Two lessons, in order of importance:
+
+1. **The motivation is an input, not an output.** It comes from the ticket, the commit
+   bodies, or the author. When none of them supply it, ask or leave
+   `TODO(author): why this work exists`. Do not derive it from the diff — a fluent invented
+   rationale is harder for the author to catch than a blank.
+2. **Match the author's register.** Short declarative sentences, plain nouns, no
+   consequence-diagnosis. If a line would not survive the author saying it out loud to a
+   teammate, cut it.

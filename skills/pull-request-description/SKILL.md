@@ -127,8 +127,22 @@ seems to need eight bullets, you are listing files instead of decisions — coll
 into the 3-5 things that actually change behavior.
 
 - **Problem** — the technical problem, in 1-3 sentences, plus the `Ticket:` link where
-  the template asks for it. What breaks, what was observed, what the current code does
-  wrong. Not a restatement of the title.
+  the template asks for it. Not a restatement of the title. Write it in the register the
+  author would type it in: short declarative sentences, concrete nouns, no rhetorical
+  framing. "We don't have a common interface for writing PR descriptions. Each dev has
+  to use their own AI agent." is a finished Problem section. Prose that diagnoses costs
+  and consequences you did not observe is not — it reads like a press release and the
+  author will cut it.
+
+  **The reason the work exists is usually not in the diff, and you cannot deduce it.** A
+  diff shows what changed; it cannot show what the author was fed up with, what the team
+  was missing, or what decision upstream produced the change. If the ticket and the
+  commit bodies don't state the why, do **not** synthesize a plausible one from the
+  change itself — a well-written invented motivation is the single most likely reason an
+  author rewrites your draft instead of editing it. Ask them in one line ("what prompted
+  this?"), or leave `TODO(author): why this work exists` and draft everything else. An
+  empty Problem section costs the author thirty seconds; a convincing wrong one costs a
+  rewrite, or ships and misleads the reviewer.
 - **Solution** — 3-5 bullets. Lead each with a bolded noun: the component, file, or
   decision (`**Points to the correct Slack integration per environment**`,
   `**docker-compose.yaml**`). Then one or two sentences on what changed and *why that
@@ -144,9 +158,13 @@ merge ordering).
 
 #### Simple changes — 1-2 sentences
 
-Do not force the full framework onto a small change. Keep the template's headings so the
-PR still looks like the others in the repo, but put one line under each and drop Testing
-entirely when CI is the whole story:
+Do not force the full framework onto a small change. Where the repo ships a template,
+keep its headings so the PR still looks like the others, but put one line under each and
+drop Testing entirely when CI is the whole story. Where the repo ships **no** template,
+drop the headings too — two or three plain sentences are a complete description for a
+small change, and Problem/Solution scaffolding over them is ceremony that hides how
+little there is to review. The framework serves changes a reviewer would otherwise have
+to reverse-engineer; a version pin is not one of them.
 
 ```markdown
 # **Problem:**
@@ -165,12 +183,18 @@ Testing genuinely has content ("ran the affected DAG locally"), one line is enou
 
 ### 7. Check the draft before handing it over
 
-- **Nothing invented.** This is the one that matters. Do not write that tests passed,
-  that a script was run, or that a value was verified unless it happened in this session
-  or appears in the commits. When verification is needed but hasn't happened, write it as
-  a placeholder the human will notice — `TODO(author): confirm the DAG run` — rather than
-  a confident sentence they might not catch.
-- Every claim traceable to the diff, the commits, or the ticket.
+- **Nothing invented.** This is the one that matters, and it covers the Problem section
+  as much as Testing. Do not write that tests passed, that a script was run, or that a
+  value was verified unless it happened in this session or appears in the commits — and
+  do not state *why* the work exists unless the ticket, the commits, or the user said so.
+  When something is needed but unknown, write it as a placeholder the human will notice
+  — `TODO(author): confirm the DAG run` — rather than a confident sentence they might
+  not catch.
+- Every claim traceable to the diff, the commits, the ticket, or the user — motivation
+  included.
+- Read the Problem section back and ask: could I have written this without knowing
+  anything the diff doesn't show? If yes, it is filler, and the real problem statement is
+  still missing.
 - Solution bullets ≤ 5, each about a decision rather than a file.
 - Headings match the template exactly; required lines present; checkboxes unticked.
 - Title has the ticket key and reads as an outcome.
@@ -204,7 +228,8 @@ snowflake that is:
 ## Reference files
 
 - `references/examples.md` — annotated real PR descriptions from these repos: two complex,
-  one simple, plus what makes each work. Read it when drafting a complex body or when the
-  right level of detail is unclear.
+  one simple, plus two contrast cases showing an over-written simple PR and an invented
+  problem statement next to the author's real one. Read it when drafting a complex body,
+  when the right level of detail is unclear, or before writing any Problem section.
 - `references/repo-conventions.md` — per-repo template shapes, base branches, and quirks.
   Read it when working in one of the known repos; the live template still wins.
