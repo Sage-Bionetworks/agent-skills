@@ -1,3 +1,8 @@
+---
+name: pull-request-description
+description: Draft the title and description for a pull request in Sage Bionetworks repos (synapsePythonClient, orca-recipes, snowflake, schematic, and others). Use whenever the user is opening a PR, asks for a PR title, PR summary, or PR description, wants an existing PR description rewritten or tightened, or has just finished a branch and is about to push. Reads the repo's pull_request_template.md, pulls the Jira ticket named in the branch for context, and scales the output — 3-5 bullets under the full template for complex changes, 1-2 sentences for simple ones.
+---
+
 # Pull request titles and descriptions
 
 Produce the best possible **first draft** of a PR title and body — good enough that the
