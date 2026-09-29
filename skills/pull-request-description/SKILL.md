@@ -135,11 +135,9 @@ from any example there. The repo's own recent merged PR titles are the ground tr
 
 #### Complex changes — follow the template, 3-5 bullets
 
-Fill every section the template defines. The Solution section carries the weight, and it
-gets **at most 3-5 bullets**. This cap is the point of the skill: a reviewer should be
-able to read those bullets and know where to look and what to scrutinize. If the change
-seems to need eight bullets, you are listing files instead of decisions — collapse them
-into the 3-5 things that actually change behavior.
+Fill every section the template defines with high-level information essential to the
+section. Do not include file references unless essential to fulfilling the requirements
+of the section.
 
 - **Problem** — the technical problem, in 1-3 sentences, plus the `Ticket:` link where
   the template asks for it. Not a restatement of the title. Write it in the register the
@@ -159,12 +157,13 @@ into the 3-5 things that actually change behavior.
   — and draft everything else. An
   empty Problem section costs the author thirty seconds; a convincing wrong one costs a
   rewrite, or ships and misleads the reviewer.
-- **Solution** — 3-5 bullets. Lead each with a bolded noun: the component, file, or
-  decision (`**Points to the correct Slack integration per environment**`,
-  `**docker-compose.yaml**`). Then one or two sentences on what changed and *why that
-  choice*. Where the template asks for acceptance criteria, number the bullets to match
-  the ticket's criteria. Name what you deliberately did *not* touch when a reviewer might
-  expect otherwise.
+- **Solution** — **at most 3-5 bullets** of high-level information essential to
+  understanding the solution. This cap is the point: a reviewer should be able to read
+  the bullets and know where to look and what to scrutinize. Lead each with a bolded
+  noun: the component, file, or decision. Then one or two sentences on what changed
+  and *why that choice*. Where the template
+  asks for acceptance criteria, number the bullets to match the ticket's criteria. Name
+  what you deliberately did *not* touch when a reviewer might expect otherwise.
 - **Testing** — how it was verified, with commands or results a reviewer could rerun.
   State plainly what could not be tested and why; that is more useful than silence.
 
