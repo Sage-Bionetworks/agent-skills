@@ -59,13 +59,25 @@ by one in the Solution section, they become the skeleton of the draft. Use the t
 *context you cannot see in the diff* (why this work exists, what the reporter observed)
 — not as filler. Most contextual background belongs in Jira, not in the PR.
 
-Link it as `[SNOW-513](https://sagebionetworks.jira.com/browse/SNOW-513)`.
+References to the ticket in the PR description's markdown should be linked, not bare —
+write `[KEY-123](https://sagebionetworks.jira.com/browse/KEY-123)`, substituting the real
+key, rather than plain text or a bare URL.
 
 ### 3. Read the repo's template
 
+GitHub accepts a template at the repo root, in `docs/`, or in `.github/`, matched
+case-insensitively, plus a `.github/PULL_REQUEST_TEMPLATE/` directory of multiple named
+templates. Don't assume `.github/` — search for it:
+
 ```bash
-cat .github/pull_request_template.md 2>/dev/null || cat .github/PULL_REQUEST_TEMPLATE.md
+find . -iname 'pull_request_template.md' -not -path '*/node_modules/*' 2>/dev/null
+find . -type d -iname 'PULL_REQUEST_TEMPLATE' -not -path '*/node_modules/*' 2>/dev/null
 ```
+
+One match → read it. No match → there is no template; use the Problem/Solution/Testing
+shape from `references/repo-conventions.md`. More than one match (a template plus a
+`PULL_REQUEST_TEMPLATE/` directory of variants) → don't guess which one applies; ask the
+user which template to use.
 
 The template is the contract, and its formatting is part of it. Copy the headings
 character for character — whether a repo writes `# **Problem:**` with the colon inside
