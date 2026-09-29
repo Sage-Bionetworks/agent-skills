@@ -188,6 +188,8 @@ drop the headings too — two or three plain sentences are a complete descriptio
 small change, and Problem/Solution scaffolding over them is ceremony that hides how
 little there is to review. 
 
+For example: 
+
 ```markdown
 # **Problem:**
 
