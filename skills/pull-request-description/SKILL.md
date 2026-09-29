@@ -127,19 +127,9 @@ Format: `[TICKET-###] Short imperative description`
 - A conventional-commit verb (`fix:`, `feat:`) after the bracket is accepted but optional
   — match what the repo's recent merged PRs do.
 
-Shape to aim for:
-
-```
-[PROJ-1892] Integration test cuts
-[PROJ-1906] fix: resolve security vulnerabilities
-[PROJ-513] Point RDS snapshot finalizer notification to env-specific Slack integration
-[PROJ-4153] Use developer AWS SSO credentials instead of shared IAM key
-```
-
-Real merged examples, with the repos they came from, live in `references/examples.md` —
-read them for calibration, not as a source of ticket prefixes or conventions to copy. A
-given repo's actual convention can drift from any example here; the repo's own recent
-merged PR titles are the ground truth, not this list.
+Real merged titles live in `references/examples.md` for calibration — not as a source
+of ticket prefixes or conventions to copy, since a repo's actual convention can drift
+from any example there. The repo's own recent merged PR titles are the ground truth.
 
 ### 6. Write the body
 
