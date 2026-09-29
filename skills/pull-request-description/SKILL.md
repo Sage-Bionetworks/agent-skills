@@ -74,8 +74,8 @@ find . -iname 'pull_request_template.md' -not -path '*/node_modules/*' 2>/dev/nu
 find . -type d -iname 'PULL_REQUEST_TEMPLATE' -not -path '*/node_modules/*' 2>/dev/null
 ```
 
-One match → read it. No match → there is no template; use the Problem/Solution/Testing
-shape from `references/repo-conventions.md`. More than one match (a template plus a
+One match → read it. No match → there is no template; fall back to plain
+`# Problem` / `# Solution` / `# Testing` headings. More than one match (a template plus a
 `PULL_REQUEST_TEMPLATE/` directory of variants) → don't guess which one applies; ask the
 user which template to use.
 
@@ -90,11 +90,12 @@ Also check for a repo-local override — `.github/skills/pull-request/SKILL.md`,
 `.github/PR_GUIDELINES.md`, or PR guidance in `CONTRIBUTING.md`/`CLAUDE.md`. A repo-local
 convention beats anything in this file.
 
-Nothing in this file is allowed to assume which repo you are in. Per-repo facts — base
-branches, ticket prefixes, template shapes, required disclosure lines — live in
-`references/repo-conventions.md`; read it for the repo at hand, and let the live template
-override it when the two disagree. If you learn something repo-specific while drafting,
-it belongs in that file, not here.
+Nothing in this file hardcodes which repo you are in, and it never should — base
+branches, ticket prefixes, template shapes, and disclosure lines belong to the repo, not
+to this skill. Re-derive them each time from the repo's own artifacts (the live template,
+`CONTRIBUTING.md`, `CLAUDE.md`, its recent merged PRs) rather than from anything cached
+here. A second, shadow copy of a repo's conventions would only drift from the real thing
+and cost you a cross-reference for no benefit.
 
 ### 4. Decide: simple or complex
 
@@ -126,15 +127,19 @@ Format: `[TICKET-###] Short imperative description`
 - A conventional-commit verb (`fix:`, `feat:`) after the bracket is accepted but optional
   — match what the repo's recent merged PRs do.
 
-Titles that work:
+Shape to aim for:
 
 ```
-[SYNPY-1892] Integration test cuts
-[SYNPY-1906] fix: resolve security vulnerabilities
-[SNOW-513] Point RDS snapshot finalizer notification to env-specific Slack integration
-[SNOW-558] Move SAML2 IdP metadata to prod environment variables
-[IT-4153] Use developer AWS SSO credentials instead of shared IAM key
+[PROJ-1892] Integration test cuts
+[PROJ-1906] fix: resolve security vulnerabilities
+[PROJ-513] Point RDS snapshot finalizer notification to env-specific Slack integration
+[PROJ-4153] Use developer AWS SSO credentials instead of shared IAM key
 ```
+
+Real merged examples, with the repos they came from, live in `references/examples.md` —
+read them for calibration, not as a source of ticket prefixes or conventions to copy. A
+given repo's actual convention can drift from any example here; the repo's own recent
+merged PR titles are the ground truth, not this list.
 
 ### 6. Write the body
 
@@ -259,9 +264,9 @@ Never push, open, or edit a PR without the user asking. This skill produces a dr
 human editor — say so briefly, and mention anything you weren't sure about so they know
 where to look first.
 
-Some repos require a line disclosing AI assistance. Check the template and
-`references/repo-conventions.md`, and if one applies, append it verbatim — the wording is
-usually fixed.
+Some repos require a line disclosing AI assistance. Check the template,
+`CONTRIBUTING.md`, and `CLAUDE.md`, and if one applies, append it verbatim — the wording
+is usually fixed.
 
 ## Reference files
 
@@ -269,5 +274,3 @@ usually fixed.
   plus two contrast cases showing an over-written simple PR and an invented problem
   statement next to the author's real one. Read it when drafting a complex body, when the
   right level of detail is unclear, or before writing any Problem section.
-- `references/repo-conventions.md` — per-repo template shapes, base branches, and quirks.
-  Read it when working in one of the known repos; the live template still wins.
