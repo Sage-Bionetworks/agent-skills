@@ -200,7 +200,7 @@ unknown motivation under Problem), not in a pile at the bottom, so the gap sits 
 reviewer would otherwise read a claim. If the draft has several, that is fine and worth
 saying in your handover line. 
 
-### 8. Hand it over
+### 7. Hand it over
 
 Output the title and the body as copy-pasteable markdown in the reply (fenced, so the
 markdown survives), then offer to open or update the PR:
