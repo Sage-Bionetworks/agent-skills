@@ -1,6 +1,6 @@
 ---
 name: pull-request-description
-description: Draft the title and description for a pull request in Sage Bionetworks repos (synapsePythonClient, orca-recipes, snowflake, schematic, and others). Use whenever the user is opening a PR, asks for a PR title, PR summary, or PR description, wants an existing PR description rewritten or tightened, or has just finished a branch and is about to push. Reads the repo's pull_request_template.md, pulls the Jira ticket named in the branch for context, and scales the output — 3-5 bullets under the full template for complex changes, 1-2 sentences for simple ones.
+description: Draft the title and description for a pull request in a Sage Bionetworks repo. Use whenever the user is opening a PR, asks for a PR title, PR summary, or PR description, wants an existing PR description rewritten or tightened, or has just finished a branch and is about to push. Reads the repo's pull_request_template.md, pulls the Jira ticket named in the branch for context, and scales the output — 3-5 bullets under the full template for complex changes, 1-2 sentences for simple ones.
 ---
 
 # Pull request titles and descriptions
@@ -24,22 +24,26 @@ git diff <base>...HEAD --stat
 git diff <base>...HEAD            # skip lock files, generated output, vendored dirs
 ```
 
-Base branch differs by repo — `develop` for synapsePythonClient, `main` for orca-recipes,
-`dev` for snowflake. Check `git remote show origin | grep 'HEAD branch'` if unsure.
+Do not assume the base branch is `main` — repos here variously default to `main`,
+`develop`, or `dev`. Read it off the remote:
+`git remote show origin | grep 'HEAD branch'`.
 
 For a PR that already exists, `gh pr view <n> --json title,body,headRefName,baseRefName`
 gives the current state; `gh pr diff <n>` gives the diff.
 
-Read commit messages carefully. In these repos commit bodies often carry the real
-reasoning — the *why this and not that*, the thing reverted and why — which the diff
-alone cannot show. That reasoning is usually the most valuable thing you can lift into
-the description.
+Read commit messages carefully. Commit bodies often carry the real reasoning — the
+*why this and not that*, the thing reverted and why — which the diff alone cannot
+show. That reasoning is usually the most valuable thing you can lift into the
+description.
 
 ### 2. Pull the Jira ticket
 
 Extract the ticket key (`SYNPY-1906`, `SNOW-513`, `IT-4153`, `PLFM-9608` — pattern
-`[A-Z]{2,}-\d+`) from, in priority order: the branch name, the commit messages, the
-existing PR title.
+`[A-Za-z]{2,}-\d+`) from, in priority order: the branch name, the commit messages, the
+existing PR title. Don't assume the key is upper-case where you find it — branches and
+commit subjects are routinely lower- or mixed-case (`synpy-1906-fix-auth`). Match
+case-insensitively, then upper-case the key before using it, since Jira itself is
+upper-case in both the title and the browse URL.
 
 If a key is found, fetch it. Try in this order:
 
@@ -50,10 +54,10 @@ If a key is found, fetch it. Try in this order:
    ticket content.
 
 From the ticket take: the summary, the problem statement, and above all the
-**acceptance criteria**. Snowflake's template asks you to walk the acceptance criteria
-one by one in the Solution section, so those become the skeleton of the draft. Use the
-ticket for *context you cannot see in the diff* (why this work exists, what the reporter
-observed) — not as filler. Most contextual background belongs in Jira, not in the PR.
+**acceptance criteria**. Where the repo's template asks you to walk those criteria one
+by one in the Solution section, they become the skeleton of the draft. Use the ticket for
+*context you cannot see in the diff* (why this work exists, what the reporter observed)
+— not as filler. Most contextual background belongs in Jira, not in the PR.
 
 Link it as `[SNOW-513](https://sagebionetworks.jira.com/browse/SNOW-513)`.
 
@@ -63,18 +67,22 @@ Link it as `[SNOW-513](https://sagebionetworks.jira.com/browse/SNOW-513)`.
 cat .github/pull_request_template.md 2>/dev/null || cat .github/PULL_REQUEST_TEMPLATE.md
 ```
 
-The template is the contract. Use its exact headings and its exact formatting —
-`# **Problem:**` with the bold and the colon in synapsePythonClient and orca-recipes,
-plain `# Problem` in snowflake. Do not invent headings it doesn't have, drop required
-lines (snowflake's `Ticket:` line), or reorder sections. Keep any checklist items the
-template ships (orca-recipes has an integration-test-DAG checkbox) as unticked boxes for
-the human to confirm — never tick a box on their behalf.
+The template is the contract, and its formatting is part of it. Copy the headings
+character for character — whether a repo writes `# **Problem:**` with the colon inside
+the bold or a plain `# Problem` is not a detail you get to normalize. Do not invent
+headings the file doesn't have, drop lines it requires, or reorder its sections. Keep any
+checklist items it ships as unticked boxes for the human to confirm — never tick a box on
+their behalf.
 
 Also check for a repo-local override — `.github/skills/pull-request/SKILL.md`,
 `.github/PR_GUIDELINES.md`, or PR guidance in `CONTRIBUTING.md`/`CLAUDE.md`. A repo-local
 convention beats anything in this file.
 
-See `references/repo-conventions.md` for what's already known about each repo.
+Nothing in this file is allowed to assume which repo you are in. Per-repo facts — base
+branches, ticket prefixes, template shapes, required disclosure lines — live in
+`references/repo-conventions.md`; read it for the repo at hand, and let the live template
+override it when the two disagree. If you learn something repo-specific while drafting,
+it belongs in that file, not here.
 
 ### 4. Decide: simple or complex
 
@@ -106,7 +114,7 @@ Format: `[TICKET-###] Short imperative description`
 - A conventional-commit verb (`fix:`, `feat:`) after the bracket is accepted but optional
   — match what the repo's recent merged PRs do.
 
-Real examples from these repos:
+Titles that work:
 
 ```
 [SYNPY-1892] Integration test cuts
@@ -147,9 +155,9 @@ into the 3-5 things that actually change behavior.
 - **Solution** — 3-5 bullets. Lead each with a bolded noun: the component, file, or
   decision (`**Points to the correct Slack integration per environment**`,
   `**docker-compose.yaml**`). Then one or two sentences on what changed and *why that
-  choice*. Where the template asks for acceptance criteria (snowflake), number the
-  bullets to match the ticket's criteria. Name what you deliberately did *not* touch when
-  a reviewer might expect otherwise.
+  choice*. Where the template asks for acceptance criteria, number the bullets to match
+  the ticket's criteria. Name what you deliberately did *not* touch when a reviewer might
+  expect otherwise.
 - **Testing** — how it was verified, with commands or results a reviewer could rerun.
   State plainly what could not be tested and why; that is more useful than silence.
 
@@ -179,7 +187,7 @@ See: https://github.com/Sage-Bionetworks/synapsePythonClient/security/dependabot
 - Updated `setup.cfg` to `cryptography >= 50.0.0` and `pytest ~= 9.0.3`.
 ```
 
-That's a complete, merged PR description from this repo. Nothing more was needed. If
+That's a complete, merged PR description, quoted as-is. Nothing more was needed. If
 Testing genuinely has content ("ran the affected DAG locally"), one line is enough.
 
 #### Author checkpoints
@@ -239,18 +247,15 @@ Never push, open, or edit a PR without the user asking. This skill produces a dr
 human editor — say so briefly, and mention anything you weren't sure about so they know
 where to look first.
 
-If the repo's convention is to disclose AI assistance, append the line the repo uses; in
-snowflake that is:
-
-```
-*This text was generated in whole or part by AI and has been reviewed for correctness by myself.*
-```
+Some repos require a line disclosing AI assistance. Check the template and
+`references/repo-conventions.md`, and if one applies, append it verbatim — the wording is
+usually fixed.
 
 ## Reference files
 
-- `references/examples.md` — annotated real PR descriptions from these repos: two complex,
-  one simple, plus two contrast cases showing an over-written simple PR and an invented
-  problem statement next to the author's real one. Read it when drafting a complex body,
-  when the right level of detail is unclear, or before writing any Problem section.
+- `references/examples.md` — annotated real PR descriptions: two complex, one simple,
+  plus two contrast cases showing an over-written simple PR and an invented problem
+  statement next to the author's real one. Read it when drafting a complex body, when the
+  right level of detail is unclear, or before writing any Problem section.
 - `references/repo-conventions.md` — per-repo template shapes, base branches, and quirks.
   Read it when working in one of the known repos; the live template still wins.
