@@ -6,9 +6,7 @@ description: Draft the title and description for a pull request in a Sage Bionet
 # Pull request titles and descriptions
 
 Produce the best possible **first draft** of a PR title and body — good enough that the
-human author edits rather than rewrites it. The reviewer's time is the scarce resource:
-a description that makes them read the diff twice has failed, and so has one that pads a
-one-line dependency bump into three headed sections.
+human author edits rather than rewrites it.
 
 ## Workflow
 
@@ -21,12 +19,15 @@ git branch --show-current
 git merge-base --fork-point origin/HEAD HEAD 2>/dev/null || git merge-base origin/HEAD HEAD
 git log --oneline <base>..HEAD
 git diff <base>...HEAD --stat
-git diff <base>...HEAD            # skip lock files, generated output, vendored dirs
+git diff <base>...HEAD
 ```
 
 Do not assume the base branch is `main` — repos here variously default to `main`,
 `develop`, or `dev`. Read it off the remote:
-`git remote show origin | grep 'HEAD branch'`.
+`git remote show origin | grep 'HEAD branch'`. Be careful if this branch wasn't created
+from that default — if its parent branch hasn't merged into `develop`/`main`/`dev` yet,
+target the PR at the parent branch instead. Check similar recent PRs in the repo, or ask
+the author, when it's unclear.
 
 For a PR that already exists, `gh pr view <n> --json title,body,headRefName,baseRefName`
 gives the current state; `gh pr diff <n>` gives the diff.
@@ -79,23 +80,14 @@ One match → read it. No match → there is no template; fall back to plain
 `PULL_REQUEST_TEMPLATE/` directory of variants) → don't guess which one applies; ask the
 user which template to use.
 
-The template is the contract, and its formatting is part of it. Copy the headings
-character for character — whether a repo writes `# **Problem:**` with the colon inside
-the bold or a plain `# Problem` is not a detail you get to normalize. Do not invent
-headings the file doesn't have, drop lines it requires, or reorder its sections. Keep any
-checklist items it ships as unticked boxes for the human to confirm — never tick a box on
-their behalf.
+The template is the contract, formatting included — follow it character for character.
+Do not invent headings the file doesn't have, drop lines it requires, or reorder its
+sections. Keep any checklist items it ships as unticked boxes for the human to confirm —
+never tick a box on their behalf.
 
 Also check for a repo-local override — `.github/skills/pull-request/SKILL.md`,
 `.github/PR_GUIDELINES.md`, or PR guidance in `CONTRIBUTING.md`/`CLAUDE.md`. A repo-local
 convention beats anything in this file.
-
-Nothing in this file hardcodes which repo you are in, and it never should — base
-branches, ticket prefixes, template shapes, and disclosure lines belong to the repo, not
-to this skill. Re-derive them each time from the repo's own artifacts (the live template,
-`CONTRIBUTING.md`, `CLAUDE.md`, its recent merged PRs) rather than from anything cached
-here. A second, shadow copy of a repo's conventions would only drift from the real thing
-and cost you a cross-reference for no benefit.
 
 ### 4. Decide: simple or complex
 
@@ -112,16 +104,7 @@ new features, refactors spanning modules, schema or data-model changes, migratio
 infrastructure and CI changes, anything with a design decision, a tradeoff, a rejected
 alternative, a follow-up, or an effect beyond the files touched.
 
-The category is a starting guess, not the verdict, and diff size is not a proxy for
-complexity — a single changed line can still leave a reviewer unable to tell what
-prompted it, why this fix and not another, or what else depends on it. A version bump
-usually is simple; occasionally the version chosen, the constraint that was blocking it,
-or a second place the same dependency is pinned all need explaining that the diff can't
-give. If a "simple" category turns out
-to need that kind of explaining, treat it as complex.
-
-When it's genuinely borderline, go complex but keep it tight — an under-described complex
-change costs a review cycle; an over-described simple one only costs a little reading.
+Diff size isn't a proxy for complexity. When it's genuinely borderline, go complex but keep it tight. 
 
 ### 5. Write the title
 
@@ -135,9 +118,7 @@ Format: `[TICKET-###] Short imperative description`
 - A conventional-commit verb (`fix:`, `feat:`) after the bracket is accepted but optional
   — match what the repo's recent merged PRs do.
 
-Real merged titles live in `references/examples.md` for calibration — not as a source
-of ticket prefixes or conventions to copy, since a repo's actual convention can drift
-from any example there. The repo's own recent merged PR titles are the ground truth.
+Real merged titles live in `references/examples.md` for calibration. Since a repo's actual convention can drift from any example there, the repo's own recent merged PR titles are the ground truth.
 
 ### 6. Write the body
 
@@ -162,9 +143,7 @@ of the section.
   change itself — a well-written invented motivation is the single most likely reason an
   author rewrites your draft instead of editing it. Ask them in one line ("what prompted
   this?"), or leave a checkpoint — `- [ ] ⚠️ **TODO(author):** why does this work exist?`
-  — and draft everything else. An
-  empty Problem section costs the author thirty seconds; a convincing wrong one costs a
-  rewrite, or ships and misleads the reviewer.
+  — and draft everything else. 
 - **Solution** — **at most 3-5 bullets** of high-level information essential to
   understanding the solution. This cap is the point: a reviewer should be able to read
   the bullets and know where to look and what to scrutinize. Lead each with a bolded
@@ -181,12 +160,9 @@ merge ordering).
 
 #### Simple changes — 1-2 sentences
 
-Do not force the full framework onto a small change. Where the repo ships a template,
-keep its headings so the PR still looks like the others, but put one line under each and
-drop Testing entirely when CI is the whole story. Where the repo ships **no** template,
-drop the headings too — two or three plain sentences are a complete description for a
-small change, and Problem/Solution scaffolding over them is ceremony that hides how
-little there is to review. 
+With a template, keep its headings but put one line under each, and drop Testing when CI
+is the whole story. Without one, drop the headings too — two or three plain sentences are
+enough.
 
 For example: 
 
@@ -222,31 +198,7 @@ UI, the emoji survives skimming, and the label says who owns it. Keep the boxes 
 Put each checkpoint in the section it belongs to (an unverified test under Testing, an
 unknown motivation under Problem), not in a pile at the bottom, so the gap sits where a
 reviewer would otherwise read a claim. If the draft has several, that is fine and worth
-saying in your handover line — a PR that admits four open questions is more useful than
-one that quietly answers them wrong.
-
-### 7. Check the draft before handing it over
-
-- **Nothing invented.** This is the one that matters, and it covers the Problem section
-  as much as Testing. Do not write that tests passed, that a script was run, or that a
-  value was verified unless it happened in this session or appears in the commits — and
-  do not state *why* the work exists unless the ticket, the commits, or the user said so.
-  When something is needed but unknown, write it as an author checkpoint —
-  `- [ ] ⚠️ **TODO(author):** confirm the DAG run` — rather than a confident sentence
-  they might not catch.
-- Every claim traceable to the diff, the commits, the ticket, or the user — motivation
-  included.
-- Read the Problem section back and ask: could I have written this without knowing
-  anything the diff doesn't show? If yes, it is filler, and the real problem statement is
-  still missing.
-- Solution bullets ≤ 5, each about a decision rather than a file.
-- Headings match the template exactly; required lines present; checkboxes unticked.
-- Title has the ticket key and reads as an outcome.
-- No secrets, tokens, credentials, internal hostnames, or PHI — including in pasted test
-  output.
-- Jira links use the full `https://sagebionetworks.jira.com/browse/KEY` form.
-
-Flag anything you had to guess at, in one line outside the draft.
+saying in your handover line. 
 
 ### 8. Hand it over
 
@@ -265,11 +217,3 @@ where to look first.
 Some repos require a line disclosing AI assistance. Check the template,
 `CONTRIBUTING.md`, and `CLAUDE.md`, and if one applies, append it verbatim — the wording
 is usually fixed.
-
-## Reference files
-
-- `references/examples.md` — annotated real PR descriptions: two complex, one simple,
-  plus contrast cases showing an over-written simple PR, a version bump that looked simple
-  but wasn't, and an invented problem statement next to the author's real one. Read it
-  when drafting a complex body, when the right level of detail is unclear, when deciding
-  simple vs. complex, or before writing any Problem section.
