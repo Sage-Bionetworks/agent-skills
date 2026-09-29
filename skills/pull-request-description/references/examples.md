@@ -1,7 +1,9 @@
 # Annotated examples
 
 Real merged PRs from Sage Bionetworks repos, lightly abridged. Read these for calibration
-on *level of detail*, not as templates to fill in.
+on *level of detail*, not as templates to fill in — note that 
+a repo's `pull_request_template.md` can change afterward, and the live file always wins
+over anything shown here.
 
 ---
 
@@ -151,6 +153,62 @@ information. This is the target for simple PRs — do not expand it.
 
 ---
 
+## Contrast: a version bump that is not simple
+
+Title: `[SNOW-563] Upgrade dbt-core to unblock sqlparse remediation`
+
+Same category as the PR above — a dependency version bump for a CVE fix — but not simple.
+Abridged from the real, merged PR:
+
+```markdown
+# Problem
+
+Ticket: [SNOW-563](https://sagebionetworks.jira.com/browse/SNOW-563)
+
+`dbt-core` 1.12.3 relaxed its pin to `sqlparse<0.7.0,>=0.5.5`, which now permits resolving
+to the just-released `sqlparse` 0.6.0 — the first version that patches both CVEs
+described in the ticket.
+
+`dbt-snowflake` 1.12.0 (our current adapter) declares `dbt-core<2.0,>=1.10.0rc0`, so it's
+compatible with dbt-core 1.12.3 without any adapter bump.
+
+# Solution
+
+1. Confirmed dbt-core 1.12.3 is unblocked and resolves cleanly with dbt-snowflake 1.12.0.
+   Ran `uv lock --upgrade-package dbt-core --upgrade-package sqlparse`; resolver landed on
+   dbt-core 1.12.3 + sqlparse 0.6.0. No `pyproject.toml` change needed — `dbt-core` was
+   never pinned directly, only pulled in transitively via `dbt-snowflake`.
+2. Bumped CI's independent `dbt-core` pin to match.
+   `.github/actions/configure-dbt/action.yml` installs dbt via a standalone
+   `uv tool install ... "dbt-core==1.12.2" --with "dbt-snowflake==1.12.0"`, decoupled from
+   `uv.lock`. The lockfile update alone would not have remediated the vulnerability in CI
+   runs — the pin needed bumping to `dbt-core==1.12.3` directly.
+
+# Testing
+
+- `uv run --group dbt dbt --version` → Core: 1.12.3, Plugin snowflake: 1.12.0, both
+  reported "Up to date!"
+- `uv run --group dbt dbt debug` → all checks passed, Snowflake connection OK
+- `uv run --group dbt dbt parse` → project parses successfully with only pre-existing,
+  unrelated constraint-support warnings
+- Did not execute the CI `uv tool install` command directly (would install into shared
+  local tool state); the dbt-core 1.12.3 + dbt-snowflake 1.12.0 combination is already
+  verified compatible via the lockfile testing above.
+```
+
+**Why the diff alone wasn't enough.** The actual code change is one line in a lockfile —
+by diff size this looks exactly like the synapsePythonClient example above. But a
+reviewer reading only that line couldn't tell: which CVE this fixes, why the fix was
+blocked until now (a *different* package, `sqlparse`, needed its pin relaxed first), why
+the adapter `dbt-snowflake` didn't also need a version bump, or that CI has its own
+separate, hand-maintained copy of the same pin that the lockfile change doesn't touch and
+that would have left the vulnerability live in CI if skipped. Every one of those is a
+Problem or Solution sentence that isn't optional here. The lesson isn't about dependency
+bumps specifically — it's that "simple" is decided by whether the diff explains itself,
+never by which category the change belongs to.
+
+---
+
 ## Contrast: what an over-written simple PR looks like
 
 Same change, padded:
@@ -176,6 +234,7 @@ Three problems: the Problem section says nothing the title didn't, the Solution 
 one edit across three bullets, and the Testing claims ("verified no breaking API
 changes", "no regressions observed") are things the author may not have actually done.
 That last one is the most damaging — a reviewer who trusts it skips a check.
+
 ---
 
 ## Contrast: an invented problem statement vs. the author's

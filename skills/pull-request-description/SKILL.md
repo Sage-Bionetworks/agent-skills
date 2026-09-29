@@ -112,6 +112,14 @@ new features, refactors spanning modules, schema or data-model changes, migratio
 infrastructure and CI changes, anything with a design decision, a tradeoff, a rejected
 alternative, a follow-up, or an effect beyond the files touched.
 
+The category is a starting guess, not the verdict, and diff size is not a proxy for
+complexity — a single changed line can still leave a reviewer unable to tell what
+prompted it, why this fix and not another, or what else depends on it. A version bump
+usually is simple; occasionally the version chosen, the constraint that was blocking it,
+or a second place the same dependency is pinned all need explaining that the diff can't
+give. If a "simple" category turns out
+to need that kind of explaining, treat it as complex.
+
 When it's genuinely borderline, go complex but keep it tight — an under-described complex
 change costs a review cycle; an over-described simple one only costs a little reading.
 
@@ -178,8 +186,7 @@ keep its headings so the PR still looks like the others, but put one line under 
 drop Testing entirely when CI is the whole story. Where the repo ships **no** template,
 drop the headings too — two or three plain sentences are a complete description for a
 small change, and Problem/Solution scaffolding over them is ceremony that hides how
-little there is to review. The framework serves changes a reviewer would otherwise have
-to reverse-engineer; a version pin is not one of them.
+little there is to review. 
 
 ```markdown
 # **Problem:**
@@ -260,6 +267,7 @@ is usually fixed.
 ## Reference files
 
 - `references/examples.md` — annotated real PR descriptions: two complex, one simple,
-  plus two contrast cases showing an over-written simple PR and an invented problem
-  statement next to the author's real one. Read it when drafting a complex body, when the
-  right level of detail is unclear, or before writing any Problem section.
+  plus contrast cases showing an over-written simple PR, a version bump that looked simple
+  but wasn't, and an invented problem statement next to the author's real one. Read it
+  when drafting a complex body, when the right level of detail is unclear, when deciding
+  simple vs. complex, or before writing any Problem section.
